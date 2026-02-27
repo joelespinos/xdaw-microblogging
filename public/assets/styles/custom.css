@@ -1,0 +1,229 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root {
+    --app-bg-color: #0F0F0F;
+    --app-dark-gray: #1b1b1b;
+    --app-border-gray: #282828;
+    --app-vivid-blue: #2B7FFF;
+}
+
+body {
+    font-family: Poppins, Inter, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--app-bg-color);
+}
+
+.bg-dark-gray {
+    background-color: var(--app-dark-gray);
+}
+
+.rounded-lg {
+    border-radius: 16px;
+}
+
+.text-vivid-blue {
+    color: var(--app-vivid-blue)
+}
+
+.btn-vivid {
+    background-color: var(--app-vivid-blue);
+    color: rgb(255, 255, 255);
+    border: none;
+}
+
+.btn-vivid:hover {
+    background-color: #1568e4;
+    cursor: pointer;
+}
+
+input, 
+textarea {
+    background-color: var(--app-dark-gray) !important;
+    border: 2px solid var(--app-border-gray) !important;
+    color: #ffffff;
+    padding-block: 0.45rem;
+    padding-inline: 0.8rem;
+    border-radius: 10px;
+    outline: none;
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: #888 !important;
+}
+
+.border-gray {
+    border: 2px solid var(--app-border-gray);
+}
+
+.top-border-gray {
+    border-top: 2px solid var(--app-border-gray);
+}
+
+.bottom-border-gray {
+    border-bottom: 2px solid var(--app-border-gray);
+}
+
+.right-border-gray {
+    border-right: 2px solid var(--app-border-gray);
+}
+
+.left-border-gray {
+    border-left: 2px solid var(--app-border-gray);
+}
+
+.pagination .page-link:hover {
+    background-color: #222;
+    border-color: var(--app-vivid-blue);
+    color: var(--app-vivid-blue);
+    transition: all 0.15s ease-in-out;
+}
+
+.pagination .btn-vivid:hover {
+    background-color: #1568e4;
+    border-color: #1568e4;
+    color: #fff;
+}
+
+.pagination .page-item.disabled .page-link:hover {
+    background-color: var(--app-dark-gray);
+    border-color: var(--app-border-gray);
+    color: #666;
+}
+
+.pagination .page-item.disabled .page-link {
+    background-color: var(--app-dark-gray) !important;
+    border-color: var(--app-border-gray) !important;
+    color: #555 !important;
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.pagination .page-link:focus {
+    background-color: var(--app-dark-gray) !important;
+    border-color: var(--app-vivid-blue) !important;
+    color: var(--app-vivid-blue) !important;
+    box-shadow: none !important;
+    outline: none !important;
+}
+
+.pagination .btn-vivid:focus {
+    background-color: #1568e4 !important;
+    border-color: #1568e4 !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
+
+.dropdown-menu {
+    width: auto;
+    min-width: 0;
+}
+
+.dropdown-menu li a {
+    white-space: nowrap;
+}
+
+.dropdown-menu .dropdown-divider {
+    border-top: 2px solid var(--app-border-gray);
+    margin: 0.5rem 0;
+}
+
+.drop-zone {
+    border: 2px dashed var(--app-border-gray);
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.drop-zone.hover {
+    border-color: var(--app-vivid-blue);
+    background-color: #181818;
+}
+
+#fileList li, #oldFileList li {
+    background-color: var(--app-dark-gray);
+    padding: 8px 12px;
+    border: 1px solid var(--app-border-gray);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-remove {
+    background: none;
+    border: none;
+    color: red;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* ===== EASYMDE DARK MODE ===== */
+
+.EasyMDEContainer {
+    background-color: var(--app-dark-gray);
+    border-radius: 16px;
+}
+
+/* Toolbar */
+.EasyMDEContainer .editor-toolbar {
+    background-color: var(--app-dark-gray);
+    border: 2px solid var(--app-border-gray);
+    border-bottom: none;
+    border-radius: 16px 16px 0 0;
+}
+
+.EasyMDEContainer .editor-toolbar button {
+    color: #aaa;
+}
+
+.EasyMDEContainer .editor-toolbar button:hover,
+.EasyMDEContainer .editor-toolbar button.active {
+    background-color: #222;
+    color: var(--app-vivid-blue);
+}
+
+/* Editor (CodeMirror) */
+.EasyMDEContainer .CodeMirror {
+    background-color: var(--app-dark-gray) !important;
+    color: #ffffff !important;
+    border: 2px solid var(--app-border-gray);
+    border-top: none;
+    border-radius: 0 0 16px 16px;
+    min-height: 150px;
+}
+
+/* Cursor blanc */
+.EasyMDEContainer .CodeMirror-cursor {
+    border-left: 2px solid #ffffff !important;
+}
+
+/* Placeholder */
+.EasyMDEContainer .CodeMirror-placeholder {
+    color: #888 !important;
+}
+
+/* Selecció de text */
+.EasyMDEContainer .CodeMirror-selected {
+    background-color: #2a2a2a !important;
+}
+
+.CodeMirror, 
+.CodeMirror-scroll, 
+.editor-preview, 
+.editor-preview-side {
+    background-color: var(--app-dark-gray) !important;
+    color: #fff !important;
+}
+
+/* Cursor blanco */
+.CodeMirror-cursor {
+    border-left: 2px solid #fff !important;
+}
+
+/* Placeholder de CodeMirror */
+.CodeMirror textarea::placeholder {
+    color: #888 !important;
+}
