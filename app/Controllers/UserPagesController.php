@@ -7,6 +7,7 @@ use App\Entities\PiwladaMediaEntity;
 use App\Entities\PiwladaPostEntity;
 use App\Models\PiwladaMediaModel;
 use App\Models\PiwladaPostModel;
+use CodeIgniter\I18n\Time;
 use Ramsey\Uuid\Uuid;
 use League\CommonMark\CommonMarkConverter;
 
@@ -53,17 +54,17 @@ class UserPagesController extends BaseController
     public function writePiwladaPost()
     {
         $rules = [
-            'piwladaContent' => 'required|min_length[5]',
-            'piwladaMedias'  => 'max_size[piwladaMedias,10240]|is_image[piwladaMedias]'
+            'piwladaContent' => 'required|min_length[1]',
+            'piwladaMedias'  => 'permit_empty|max_size[piwladaMedias,10240]|is_image[piwladaMedias]'
         ];
 
         $validationMessages = [
             'piwladaContent' => [
                 'required'   => 'El contingut de la piwlada és obligatori.',
-                'min_length' => 'El contingut de la piwlada ha de tenir almenys 5 caràcters.'
+                'min_length' => 'El contingut de la piwlada ha de tenir almenys {param} caràcters.'
             ],
             'piwladaMedias' => [
-                'max_size' => 'Els fitxers penjats no poden superar els 10MB.',
+                'max_size' => 'Els fitxers penjats no poden superar els {param}KB.',
                 'is_image' => 'Només es permeten fitxers d\'imatge (jpg, png, etc.).'
             ]
         ];
@@ -84,22 +85,25 @@ class UserPagesController extends BaseController
 
         $piwladaModel->save($piwladaToAdd);
 
+        // Recuperem el registre amb el ID ja inserit
         $piwladaToAdd = $piwladaModel->find($piwladaModel->getInsertID());
 
-        foreach ($piwladaMedias as $file) {
+        if ($piwladaMedias != null) {
+            foreach ($piwladaMedias as $file) {
 
-            if ($file->isValid() && !$file->hasMoved()) {
-                $newName = $file->getRandomName();
-                
-                $piwladaMediaToAdd = new PiwladaMediaEntity();
-                $piwladaMediaToAdd->piwlada_uuid = $piwladaToAdd->piwlada_uuid;
-                $piwladaMediaToAdd->file_path = 'users-images/' . $newName;
-                $piwladaMediaToAdd->file_original_name = $file->getName();
-                $piwladaMediaToAdd->mime_type = $file->getMimeType();
-                
-                $piwladaMediaModel->save($piwladaMediaToAdd);
+                if ($file->isValid() && !$file->hasMoved()) {
+                    $newName = $file->getRandomName();
+                    
+                    $piwladaMediaToAdd = new PiwladaMediaEntity();
+                    $piwladaMediaToAdd->piwlada_uuid = $piwladaToAdd->piwlada_uuid;
+                    $piwladaMediaToAdd->file_path = 'users-images/' . $newName;
+                    $piwladaMediaToAdd->file_original_name = $file->getName();
+                    $piwladaMediaToAdd->mime_type = $file->getMimeType();
+                    
+                    $piwladaMediaModel->save($piwladaMediaToAdd);
 
-                $file->move(WRITEPATH . 'uploads/users-images', $newName);
+                    $file->move(WRITEPATH . 'uploads/users-images', $newName);
+                }
             }
         }
 
@@ -114,14 +118,8 @@ class UserPagesController extends BaseController
         $piwladaIdBytes = Uuid::fromString($piwladaUuid)->getBytes();
         $piwladaSearch = $piwladaModel->find($piwladaIdBytes);
 
-        // La piwlada existeix?
-        if (!$piwladaSearch) {
-            return redirect()->to(base_url('/dashboard'))->with('error-advice', 'Error, la piwlada a editar no existeix!');
-
-        // L'usuari es valid per editar-la?
-        } else if ($piwladaSearch->user_uuid != session()->get('user_uuid') && session()->get('user_role') != 'admin') {
-            return redirect()->to(base_url('/dashboard'))->with('error-advice', 'Error, no pots editar aquesta piwlada!');
-        }
+        if ($this->checkTimeRestriction($piwladaSearch)) 
+            return redirect()->to(base_url('/dashboard'))->with('error-advice', 'Error, la piwlada a excedit els 30 minuts per ser manipulada!');
 
         // Recuperem totes les medias de la piwlada
         $mediasOfPiwlada = $piwladaMediaModel->where('piwlada_uuid', $piwladaIdBytes)->findAll();
@@ -133,5 +131,85 @@ class UserPagesController extends BaseController
         $data['title'] = "Edita la teva piwlada";
 
         return view('user-pages/piw-edit', $data);
+    }
+
+    public function editPiwladaPost($piwladaUuid)
+    {
+        $rules = [
+            'piwladaContent' => 'required|min_length[1]',
+            'piwladaMedias'  => 'permit_empty|max_size[piwladaMedias,10240]|is_image[piwladaMedias]'
+        ];
+
+        $validationMessages = [
+            'piwladaContent' => [
+                'required'   => 'El contingut de la piwlada és obligatori.',
+                'min_length' => 'El contingut de la piwlada ha de tenir almenys {param} caràcters.'
+            ],
+            'piwladaMedias' => [
+                'max_size' => 'Els fitxers penjats no poden superar els {param}KB.',
+                'is_image' => 'Només es permeten fitxers d\'imatge (jpg, png, etc.).'
+            ]
+        ];
+
+        if (!$this->validate($rules, $validationMessages)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $piwladaModel = new PiwladaPostModel();
+        $piwladaMediaModel = new PiwladaMediaModel();
+
+        $piwladaIdBytes = Uuid::fromString($piwladaUuid)->getBytes();
+        $piwladaSearch = $piwladaModel->find($piwladaIdBytes);
+
+        if ($this->checkTimeRestriction($piwladaSearch)) 
+            return redirect()->to(base_url('/dashboard'))->with('error-advice', 'Error, la piwlada a excedit els 30 minuts per ser manipulada!');
+
+        if ($piwladaSearch->content != $this->request->getPost('piwladaContent')) {
+            $piwladaSearch->content = $this->request->getPost('piwladaContent');
+            $piwladaModel->save($piwladaSearch);
+        }
+
+        $oldMedias = $this->request->getPost('oldPiwladaMedias') ?? [];
+        $allMedias = $piwladaMediaModel->where('piwlada_uuid', $piwladaIdBytes)->findAll();
+
+        foreach ($allMedias as $media) {
+            if (!in_array($media->media_uuid, $oldMedias)) {
+                $mediaUuidBytes = Uuid::fromString($media->media_uuid)->getBytes();
+                $piwladaMediaModel->where('media_uuid', $mediaUuidBytes)->delete();
+            }
+        }
+
+        // Noves imatges
+        $piwladaMedias = $this->request->getFileMultiple('piwladaMedias');
+
+        if ($piwladaMedias != null) {
+            foreach ($piwladaMedias as $file) {
+
+                if ($file->isValid() && !$file->hasMoved()) {
+                    $newName = $file->getRandomName();
+                    
+                    $piwladaMediaToAdd = new PiwladaMediaEntity();
+                    $piwladaMediaToAdd->piwlada_uuid = $piwladaSearch->piwlada_uuid;
+                    $piwladaMediaToAdd->file_path = 'users-images/' . $newName;
+                    $piwladaMediaToAdd->file_original_name = $file->getName();
+                    $piwladaMediaToAdd->mime_type = $file->getMimeType();
+                    
+                    $piwladaMediaModel->save($piwladaMediaToAdd);
+
+                    $file->move(WRITEPATH . 'uploads/users-images', $newName);
+                }
+            }
+        }
+
+        return redirect()->to(base_url('/dashboard'));
+        
+    }
+
+    private function checkTimeRestriction($piwladaSearch) {
+        // Validació de temps posterior a la publicació
+        $now = Time::now();
+        $piwladaTime = new Time($piwladaSearch->created_at);
+        $piwladaTime = $piwladaTime->addMinutes(30);
+        return $now->isAfter($piwladaTime);
     }
 }

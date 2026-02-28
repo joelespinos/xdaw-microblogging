@@ -14,6 +14,7 @@ use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\AuthFilter;
 use App\Filters\LoggedInFilter;
+use App\Filters\PiwladaAuthorizationFilter;
 
 class Filters extends BaseFilters
 {
@@ -38,10 +39,13 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
 
         // Filtre d'autenticació de sessió
-        'authforms'          => AuthFilter::class,
+        'authforms'     => AuthFilter::class,
 
-        // Filtre per redirigir al dashboard en cas de sessió ja iniciada
-        'loggedIn'   => LoggedInFilter::class,
+        // Filtre per redirigir en cas de sessió ja iniciada
+        'loggedIn'      => LoggedInFilter::class,
+
+        // Filtre per autenticar que l'usuari que vol manipular una piwlada sigui el creador o un admin
+        'piwladaAuth'   => PiwladaAuthorizationFilter::class,
     ];
 
     /**

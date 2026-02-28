@@ -33,7 +33,7 @@
                             <li>
                                 <span><?= esc($media->file_original_name) ?></span>
                                 
-                                <input type="hidden" name="oldMedias[]" value="<?= esc($media->media_uuid) ?>">
+                                <input type="hidden" name="oldPiwladaMedias[]" value="<?= esc($media->media_uuid) ?>">
                                 <button type="button" class="btn-remove"><i class="fa-solid fa-x"></i></button>
                             </li>
                         <?php endforeach; ?>
