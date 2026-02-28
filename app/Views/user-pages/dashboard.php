@@ -24,7 +24,6 @@
                 <?php foreach($piwlades as $piwlada): ?>
 
                     <div class="bg-dark-gray border-gray rounded-lg mb-4 overflow-hidden">
-
                         <div class="d-flex justify-content-between align-items-center">
 
                             <?php if ($piwlada->canManipulate): ?>
@@ -39,6 +38,18 @@
                                         <?= csrf_field() ?>
                                     </form>
                                 </div>
+                            <?php endif; ?>
+                            <?php if ($piwlada->canChangeVisibility): ?>
+                                <a type="button" class="ms-2 btn btn-link p-0 text-decoration-none" onclick="confirmationVisibility('<?= $piwlada->piwlada_uuid ?>')">
+                                    <?php if ($piwlada->visibility === 'public'): ?>
+                                        <i class="fa-solid fa-lock-open fa-lg"></i>
+                                    <?php else: ?>
+                                        <i class="fa-solid fa-lock fa-lg"></i>
+                                    <?php endif; ?>
+                                </a>
+                                <form id="visibility-form-<?= $piwlada->piwlada_uuid ?>" method="post" action="<?= base_url('/dashboard/piw/visibility/'.$piwlada->piwlada_uuid) ?>" class="d-none">
+                                    <?= csrf_field() ?>
+                                </form>
                             <?php endif; ?>
                             
                             <!-- USUARI -->
@@ -80,7 +91,6 @@
                         <div class="p-3 top-border-gray text-white">
                             <?= esc($piwlada->content) ?>
                         </div>
-
                     </div>
 
                 <?php endforeach; ?>
@@ -106,7 +116,7 @@
             cancelButtonText: 'Cancel·lar',
             customClass: {
                 popup: 'bg-dark-gray text-white p-4 rounded-lg',
-                confirmButton: 'btn-vivid px-4 py-2 rounded',
+                confirmButton: 'btn-vivid px-4 py-2 rounded ms-5',
                 cancelButton: 'btn text-vivid-blue px-4 py-2 rounded border border-vivid-blue'
             },
             buttonsStyling: false,
@@ -115,6 +125,29 @@
             if (result.isConfirmed) {
                 // Submet el formulari existent amb CSRF
                 const form = document.getElementById('delete-form-' + uuid);
+                if (form) form.submit();
+            }
+        });
+    }
+
+    function confirmationVisibility(uuid) {
+        Swal.fire({
+            title: '<i class="fa-solid fa-eye me-2 text-vivid-blue"></i>Canviar visibilitat',
+            html: "<p>Estàs a punt de canviar la visibilitat d'aquesta piwlada. Vols continuar?</p>",
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Canviar',
+            cancelButtonText: 'Cancel·lar',
+            customClass: {
+                popup: 'bg-dark-gray text-white p-4 rounded-lg',
+                confirmButton: 'btn-vivid px-4 py-2 rounded ms-5',
+                cancelButton: 'btn text-vivid-blue px-4 py-2 rounded border border-vivid-blue'
+            },
+            buttonsStyling: false,
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('visibility-form-' + uuid);
                 if (form) form.submit();
             }
         });

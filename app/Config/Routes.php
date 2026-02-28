@@ -41,6 +41,9 @@ $routes->group('dashboard', ['filter' => 'authforms'], static function($routes) 
         
         $routes->post('delete/(:uuid7)', 'UserPagesController::deletePiwlada/$1', ['filter' => 'piwladaAuth']);
         $routes->addRedirect('delete/', 'dashboard');
+
+        $routes->post('visibility/(:uuid7)', 'UserPagesController::visibilityPiwlada/$1', ['filter' => 'piwladaAuth']);
+        $routes->addRedirect('visibility/', 'dashboard');
     });
 
 });

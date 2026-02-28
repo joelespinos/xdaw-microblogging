@@ -58,10 +58,23 @@ class PiwladaPostModel extends Model
         return $data;
     }
 
-    public function getPiwladasWithUser()
+    public function getPiwladasWithUserAndVisible()
     {
-        return $this->select('piwlada_post.*, user_profile.username')
+        $userUuid = session()->get('user_uuid');
+        $userUuidBytes = Uuid::fromString($userUuid)->getBytes();
+        $userRole = session()->get('user_role');
+
+        $query = $this->select('piwlada_post.*, user_profile.username')
                     ->join('user_profile', 'piwlada_post.user_uuid = user_profile.user_uuid')
                     ->orderBy('piwlada_post.created_at', 'DESC');
+
+        if ($userRole !== 'admin') {
+            $query->groupStart()
+                ->where('piwlada_post.visibility', 'public')
+                ->orWhere('piwlada_post.user_uuid', $userUuidBytes)
+                ->groupEnd();
+        }
+
+        return $query;
     }
 }

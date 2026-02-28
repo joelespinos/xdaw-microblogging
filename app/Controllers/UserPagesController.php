@@ -21,7 +21,7 @@ class UserPagesController extends BaseController
         $piwladaModel = new PiwladaPostModel();
         $piwladaMediaModel = new PiwladaMediaModel();
 
-        $piwlades = $piwladaModel->getPiwladasWithUser()->paginate(5);
+        $piwlades = $piwladaModel->getPiwladasWithUserAndVisible()->paginate(5);
 
         // --- CONVERSIÓ DE MARKDOWN A HTML ---
         
@@ -36,7 +36,8 @@ class UserPagesController extends BaseController
         foreach ($piwlades as $piwlada) {
             $piwlada->media = $piwladaMediaModel->getMedias($piwlada->piwlada_uuid);
             $piwlada->content = $converter->convert($piwlada->content);
-            $piwlada->canManipulate = !$this->checkTimeRestriction($piwlada) || session()->get('user_role') == 'admin';
+            $piwlada->canManipulate = (!$this->checkTimeRestriction($piwlada) && $piwlada->user_uuid == session()->get('user_uuid')) || session()->get('user_role') == 'admin';
+            $piwlada->canChangeVisibility = $piwlada->user_uuid == session()->get('user_uuid') || session()->get('user_role') == 'admin';
         }
 
         $data['piwlades'] = $piwlades;
@@ -211,14 +212,40 @@ class UserPagesController extends BaseController
         $piwladaPostModel = new PiwladaPostModel();
         $piwladaMediaModel = new PiwladaMediaModel();
 
+        $piwladaIdBytes = Uuid::fromString($piwladaUuid)->getBytes();
+        $piwladaSearch = $piwladaPostModel->find($piwladaIdBytes);
+
+        if ($this->checkTimeRestriction($piwladaSearch) && session()->get('user_role') != 'admin') 
+            return redirect()->to(base_url('/dashboard'))->with('error-advice', 'Error, la piwlada a excedit els 30 minuts per ser manipulada!');
+
         $piwladaUuidBytes = Uuid::fromString($piwladaUuid)->getBytes();
 
         $piwladaPostModel->delete($piwladaUuidBytes);
 
         // Cascade soft delete per a piwlada media
         $piwladaMediaModel->where('piwlada_uuid', $piwladaUuidBytes)->delete();
-        
+
         return redirect()->to(base_url('/dashboard'))->with('info-advice', 'La piwlada amb uuid: ' . $piwladaUuid . ' s\'ha esborrat correctament.');
+    }
+
+    public function visibilityPiwlada($piwladaUuid)
+    {
+        $piwladaPostModel = new PiwladaPostModel();
+
+        $piwladaUuidBytes = Uuid::fromString($piwladaUuid)->getBytes();
+        $piwladaSearch = $piwladaPostModel->find($piwladaUuidBytes);
+
+        switch ($piwladaSearch->visibility) {
+            case 'public':
+                $piwladaPostModel->set('visibility', 'private')->where('piwlada_uuid', $piwladaUuidBytes)->update();
+                break;
+
+            case 'private':
+                $piwladaPostModel->set('visibility', 'public')->where('piwlada_uuid', $piwladaUuidBytes)->update();
+                break;
+        }
+        
+        return redirect()->to(base_url('/dashboard'))->with('info-advice', 'S\'ha canviat la visibilitat de la piwlada amb uuid: ' . $piwladaUuid . ' correctament.');
     }
 
     private function checkTimeRestriction($piwladaSearch) {
