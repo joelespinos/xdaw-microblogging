@@ -39,7 +39,7 @@ $routes->group('dashboard', ['filter' => 'authforms'], static function($routes) 
         $routes->post('edit/(:uuid7)', 'UserPagesController::editPiwladaPost/$1', ['filter' => 'piwladaAuth']);
         $routes->addRedirect('edit/', 'dashboard');
         
-        $routes->get('delete/(:uuid7)', 'UserPagesController::deletePiwlada/$1');
+        $routes->post('delete/(:uuid7)', 'UserPagesController::deletePiwlada/$1', ['filter' => 'piwladaAuth']);
         $routes->addRedirect('delete/', 'dashboard');
     });
 

@@ -9,27 +9,49 @@
             <div class="row justify-content-center">
                 <div class="col-md-8 col-lg-6">
 
+                <?php if (session()->getFlashdata('error-advice')): ?>
+                    <div class="text-center mb-5 alert alert-danger py-2" role="alert">
+                        <?= session()->getFlashdata('error-advice') ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (session()->getFlashdata('info-advice')): ?>
+                    <div class="text-center mb-5 alert alert-info py-2" role="alert">
+                        <?= session()->getFlashdata('info-advice') ?>
+                    </div>
+                <?php endif; ?>
+
                 <?php foreach($piwlades as $piwlada): ?>
 
                     <div class="bg-dark-gray border-gray rounded-lg mb-4 overflow-hidden">
 
-                        <!-- USUARI -->
-                        <button>
-                            <a href="<?= base_url('/dashboard/piw/edit/'.$piwlada->piwlada_uuid) ?>">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </a>
-                        </button>
-                        <div class="text-end py-3 me-3 bottom-border-gray">
-                            <strong class="text-white">
-                                @<?= esc($piwlada->username) ?>
-                            </strong>
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <?php if ($piwlada->canManipulate): ?>
+                                <div class="ms-2">
+                                    <a href="<?= base_url('/dashboard/piw/edit/'.$piwlada->piwlada_uuid) ?>" class="text-decoration-none">
+                                        <i class="fa-solid fa-pen-to-square fa-lg"></i>
+                                    </a>
+                                    <a type="button" class="btn btn-link p-0 text-decoration-none" onclick="confirmationDelete('<?= $piwlada->piwlada_uuid ?>')">
+                                        <i class="fa-solid fa-trash fa-lg text-danger"></i>
+                                    </a>
+                                    <form id="delete-form-<?= $piwlada->piwlada_uuid ?>" method="post" action="<?= base_url('/dashboard/piw/delete/'.$piwlada->piwlada_uuid) ?>" class="d-none">
+                                        <?= csrf_field() ?>
+                                    </form>
+                                </div>
+                            <?php endif; ?>
+                            
+                            <!-- USUARI -->
+                            <div class="text-end py-3 ms-auto me-3">
+                                <strong class="text-white">
+                                    @<?= esc($piwlada->username) ?>
+                                </strong>
+                            </div>
                         </div>
 
                         <!-- CAROUSEL -->
                         <?php if (!empty($piwlada->media)): ?>
-                            <div id="carousel-<?= esc($piwlada->piwlada_uuid) ?>" 
-                                class="carousel slide" 
-                                data-bs-ride="false">
+                            <div id="carousel-<?= esc($piwlada->piwlada_uuid) ?>" class="carousel slide" data-bs-ride="false">
 
                                 <div class="carousel-inner">
 
@@ -72,4 +94,30 @@
     <?= $pager->links('default', 'dashboard-paginator') ?>
                 
 </main>
+
+<script>
+    function confirmationDelete(uuid) {
+        Swal.fire({
+            title: '<i class="fa-solid fa-trash me-2 text-vivid-blue"></i>Confirma l\'esborrat',
+            html: "<p>Estàs a punt d'esborrar aquesta piwlada. Aquesta acció és irreversible.</p>",
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Esborrar',
+            cancelButtonText: 'Cancel·lar',
+            customClass: {
+                popup: 'bg-dark-gray text-white p-4 rounded-lg',
+                confirmButton: 'btn-vivid px-4 py-2 rounded',
+                cancelButton: 'btn text-vivid-blue px-4 py-2 rounded border border-vivid-blue'
+            },
+            buttonsStyling: false,
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submet el formulari existent amb CSRF
+                const form = document.getElementById('delete-form-' + uuid);
+                if (form) form.submit();
+            }
+        });
+    }
+</script>
 <?= $this->endSection(); ?>

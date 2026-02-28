@@ -18,7 +18,7 @@ class PiwladaAuthorizationFilter implements FilterInterface
      */
     public function before(RequestInterface $request, $arguments = null)
     {
-        // Utilitzem el service router per a obtenir els parametres de ruta -> per exemple (:uuid)
+        // Utilitzem el service router per a obtenir els parametres de ruta -> per exemple: ruta/(:uuid) <- aquest es el parametre 0
         $params = \Config\Services::router()->params();
         $piwladaUuid = $params[0];
 

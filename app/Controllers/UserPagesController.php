@@ -36,6 +36,7 @@ class UserPagesController extends BaseController
         foreach ($piwlades as $piwlada) {
             $piwlada->media = $piwladaMediaModel->getMedias($piwlada->piwlada_uuid);
             $piwlada->content = $converter->convert($piwlada->content);
+            $piwlada->canManipulate = !$this->checkTimeRestriction($piwlada) || session()->get('user_role') == 'admin';
         }
 
         $data['piwlades'] = $piwlades;
@@ -118,7 +119,7 @@ class UserPagesController extends BaseController
         $piwladaIdBytes = Uuid::fromString($piwladaUuid)->getBytes();
         $piwladaSearch = $piwladaModel->find($piwladaIdBytes);
 
-        if ($this->checkTimeRestriction($piwladaSearch)) 
+        if ($this->checkTimeRestriction($piwladaSearch) && session()->get('user_role') != 'admin') 
             return redirect()->to(base_url('/dashboard'))->with('error-advice', 'Error, la piwlada a excedit els 30 minuts per ser manipulada!');
 
         // Recuperem totes les medias de la piwlada
@@ -161,7 +162,7 @@ class UserPagesController extends BaseController
         $piwladaIdBytes = Uuid::fromString($piwladaUuid)->getBytes();
         $piwladaSearch = $piwladaModel->find($piwladaIdBytes);
 
-        if ($this->checkTimeRestriction($piwladaSearch)) 
+        if ($this->checkTimeRestriction($piwladaSearch) && session()->get('user_role') != 'admin') 
             return redirect()->to(base_url('/dashboard'))->with('error-advice', 'Error, la piwlada a excedit els 30 minuts per ser manipulada!');
 
         if ($piwladaSearch->content != $this->request->getPost('piwladaContent')) {
@@ -203,6 +204,21 @@ class UserPagesController extends BaseController
 
         return redirect()->to(base_url('/dashboard'));
         
+    }
+
+    public function deletePiwlada($piwladaUuid)
+    {
+        $piwladaPostModel = new PiwladaPostModel();
+        $piwladaMediaModel = new PiwladaMediaModel();
+
+        $piwladaUuidBytes = Uuid::fromString($piwladaUuid)->getBytes();
+
+        $piwladaPostModel->delete($piwladaUuidBytes);
+
+        // Cascade soft delete per a piwlada media
+        $piwladaMediaModel->where('piwlada_uuid', $piwladaUuidBytes)->delete();
+        
+        return redirect()->to(base_url('/dashboard'))->with('info-advice', 'La piwlada amb uuid: ' . $piwladaUuid . ' s\'ha esborrat correctament.');
     }
 
     private function checkTimeRestriction($piwladaSearch) {

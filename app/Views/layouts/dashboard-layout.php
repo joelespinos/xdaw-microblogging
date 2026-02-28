@@ -38,6 +38,9 @@
         este es el footer del dashboard
     </footer>
     
+    <!-- SWEET ALERTS JS -->
+     <script src="<?= base_url("assets/sweetalert2/js/sweetalert2.js") ?>"></script>
+     
     <!-- BOOTSTRAP JS -->
     <script src="<?= base_url("assets/bootstrap/js/bootstrap.bundle.min.js") ?>"></script>
 </body>
