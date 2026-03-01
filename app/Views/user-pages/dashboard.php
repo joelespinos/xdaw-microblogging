@@ -2,7 +2,7 @@
 
 <?= $this->section('dashboard-content') ?>
 
-<main>
+<main style="flex: 1 0 auto;">
     <?php if (!empty($piwlades)): ?>
         
         <div class="container pt-5">
@@ -27,24 +27,24 @@
                         <div class="d-flex justify-content-between align-items-center">
 
                             <?php if ($piwlada->canManipulate): ?>
-                                <div class="ms-2">
+                                <div class="ms-2 d-flex gap-2">
                                     <a href="<?= base_url('/dashboard/piw/edit/'.$piwlada->piwlada_uuid) ?>" class="text-decoration-none">
-                                        <i class="fa-solid fa-pen-to-square fa-lg"></i>
+                                        <i class="fa-solid fa-pen-to-square"></i>
                                     </a>
-                                    <a type="button" class="btn btn-link p-0 text-decoration-none" onclick="confirmationDelete('<?= $piwlada->piwlada_uuid ?>')">
-                                        <i class="fa-solid fa-trash fa-lg text-danger"></i>
+                                    <a href="" type="button" class="btn btn-link me-1 p-0 text-decoration-none" onclick="confirmationDelete('<?= $piwlada->piwlada_uuid ?>', event)" role="button">
+                                        <i class="fa-solid fa-trash text-danger"></i>
                                     </a>
-                                    <form id="delete-form-<?= $piwlada->piwlada_uuid ?>" method="post" action="<?= base_url('/dashboard/piw/delete/'.$piwlada->piwlada_uuid) ?>" class="d-none">
+                                    <form id="delete-form-<?= $piwlada->piwlada_uuid ?>" method="post" action="<?= base_url('/dashboard/piw/delete/'.$piwlada->piwlada_uuid) ?>" class="d-none" role="button">
                                         <?= csrf_field() ?>
                                     </form>
                                 </div>
                             <?php endif; ?>
                             <?php if ($piwlada->canChangeVisibility): ?>
-                                <a type="button" class="ms-2 btn btn-link p-0 text-decoration-none" onclick="confirmationVisibility('<?= $piwlada->piwlada_uuid ?>')">
+                                <a href="" type="button" class="ms-2 btn btn-link p-0 text-decoration-none" onclick="confirmationVisibility('<?= $piwlada->piwlada_uuid ?>', event)">
                                     <?php if ($piwlada->visibility === 'public'): ?>
-                                        <i class="fa-solid fa-lock-open fa-lg"></i>
+                                        <i class="fa-solid fa-eye"></i>
                                     <?php else: ?>
-                                        <i class="fa-solid fa-lock fa-lg"></i>
+                                        <i class="fa-solid fa-eye-slash"></i>
                                     <?php endif; ?>
                                 </a>
                                 <form id="visibility-form-<?= $piwlada->piwlada_uuid ?>" method="post" action="<?= base_url('/dashboard/piw/visibility/'.$piwlada->piwlada_uuid) ?>" class="d-none">
@@ -88,8 +88,14 @@
                         <?php endif; ?>
 
                         <!-- CONTENT -->
-                        <div class="p-3 top-border-gray text-white">
+                        <div class="p-3 top-border-gray text-white p-content">
                             <?= esc($piwlada->content) ?>
+                        </div>
+
+                        <div class="ps-3 py-2 top-border-gray text-white">
+                            <a href="<?= base_url('/dashboard/piw/comments/'.$piwlada->piwlada_uuid) ?>">
+                                <i class="fa-solid fa-comment-dots"></i>
+                            </a>
                         </div>
                     </div>
 
@@ -106,7 +112,8 @@
 </main>
 
 <script>
-    function confirmationDelete(uuid) {
+    function confirmationDelete(uuid, event) {
+        event.preventDefault();
         Swal.fire({
             title: '<i class="fa-solid fa-trash me-2 text-vivid-blue"></i>Confirma l\'esborrat',
             html: "<p>Estàs a punt d'esborrar aquesta piwlada. Aquesta acció és irreversible.</p>",
@@ -130,7 +137,8 @@
         });
     }
 
-    function confirmationVisibility(uuid) {
+    function confirmationVisibility(uuid, event) {
+        event.preventDefault();
         Swal.fire({
             title: '<i class="fa-solid fa-eye me-2 text-vivid-blue"></i>Canviar visibilitat',
             html: "<p>Estàs a punt de canviar la visibilitat d'aquesta piwlada. Vols continuar?</p>",

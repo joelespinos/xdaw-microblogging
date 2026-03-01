@@ -224,6 +224,9 @@ class UserPagesController extends BaseController
 
         // Cascade soft delete per a piwlada media
         $piwladaMediaModel->where('piwlada_uuid', $piwladaUuidBytes)->delete();
+        
+        // Cascade soft delete per a comentaris
+        $piwladaPostModel->where('parent_uuid', $piwladaUuidBytes)->delete();
 
         return redirect()->to(base_url('/dashboard'))->with('info-advice', 'La piwlada amb uuid: ' . $piwladaUuid . ' s\'ha esborrat correctament.');
     }
@@ -246,6 +249,71 @@ class UserPagesController extends BaseController
         }
         
         return redirect()->to(base_url('/dashboard'))->with('info-advice', 'S\'ha canviat la visibilitat de la piwlada amb uuid: ' . $piwladaUuid . ' correctament.');
+    }
+
+    public function commentsPiwladaGet($piwladaUuid)
+    {
+        $piwladaPostModel = new PiwladaPostModel();
+        $piwladaMediaModel = new PiwladaMediaModel();
+
+        $piwladaUuidBytes = Uuid::fromString($piwladaUuid)->getBytes();
+        $piwladaSearch = $piwladaPostModel->getPiwladaWithUsername($piwladaUuidBytes);
+
+        // --- CONVERSIÓ DE MARKDOWN A HTML ---
+        
+        // Configuració de seguretat del convertidor
+        $config = [
+            'html_input' => 'strip',
+            'allow_unsafe_links' => false,
+        ];
+
+        $converter = new CommonMarkConverter($config);
+
+        $piwladaSearch->media = $piwladaMediaModel->getMedias($piwladaSearch->piwlada_uuid);
+        $piwladaSearch->content = $converter->convert($piwladaSearch->content);
+        $piwladaSearch->comments = $piwladaPostModel->getCommentsByParentId($piwladaUuidBytes)->paginate(3);
+
+        foreach($piwladaSearch->comments as $commentContent) {
+            $commentContent->content = $converter->convert($commentContent->content);
+        }
+
+        $data['piwlada'] = $piwladaSearch;
+        $data['pager'] = $piwladaPostModel->pager;
+        $data['title'] = 'Menú principal';
+
+        return view('user-pages/piw-comments', $data);
+    }
+
+    public function commentsPiwladaPost($piwladaUuid)
+    {
+        $rules = [
+            'commentContent' => 'required|min_length[1]'
+        ];
+
+        $validationMessages = [
+            'commentContent' => [
+                'required' => 'El contingut del comentari és obligatori.',
+                'min_length' => 'El comentari ha de tenir almenys {param} caràcters.'
+            ]
+        ];
+
+        if (!$this->validate($rules, $validationMessages)) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $piwladaPostModel = new PiwladaPostModel();
+
+        $commentContent = $this->request->getPost('commentContent');
+
+        $comment = new PiwladaPostEntity();
+        $comment->user_uuid = session()->get('user_uuid');
+        $comment->parent_uuid = $piwladaUuid;
+        $comment->content = $commentContent;
+        $comment->visibility = 'public';
+
+        $piwladaPostModel->save($comment);
+
+        return redirect()->to(base_url('/dashboard/piw/comments/'.$piwladaUuid))->with('info-advice', 'Comentari publicat correctament');
     }
 
     private function checkTimeRestriction($piwladaSearch) {

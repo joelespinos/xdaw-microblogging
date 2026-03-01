@@ -66,6 +66,7 @@ class PiwladaPostModel extends Model
 
         $query = $this->select('piwlada_post.*, user_profile.username')
                     ->join('user_profile', 'piwlada_post.user_uuid = user_profile.user_uuid')
+                    ->where('parent_uuid', null)
                     ->orderBy('piwlada_post.created_at', 'DESC');
 
         if ($userRole !== 'admin') {
@@ -76,5 +77,20 @@ class PiwladaPostModel extends Model
         }
 
         return $query;
+    }
+
+    public function getPiwladaWithUsername($piwladaUuid)
+    {
+        return $this->select('piwlada_post.*, user_profile.username')
+                    ->join('user_profile', 'piwlada_post.user_uuid = user_profile.user_uuid')
+                    ->where('piwlada_post.piwlada_uuid', $piwladaUuid)
+                    ->first();
+    }
+
+    public function getCommentsByParentId($piwladaUuid)
+    {
+        return $this->select('piwlada_post.*, user_profile.username')
+                    ->join('user_profile', 'piwlada_post.user_uuid = user_profile.user_uuid')
+                    ->where('piwlada_post.parent_uuid', $piwladaUuid);
     }
 }

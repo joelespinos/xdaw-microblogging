@@ -218,7 +218,7 @@ textarea::placeholder {
     color: #fff !important;
 }
 
-/* Cursor blanco */
+/* Cursor blanc */
 .CodeMirror-cursor {
     border-left: 2px solid #fff !important;
 }
@@ -226,4 +226,59 @@ textarea::placeholder {
 /* Placeholder de CodeMirror */
 .CodeMirror textarea::placeholder {
     color: #888 !important;
+}
+
+.EasyMDEContainer .CodeMirror, 
+.EasyMDEContainer .CodeMirror-scroll {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    box-sizing: border-box !important;
+}
+
+/* Asegurarse de que la preview también no genere scroll */
+.EasyMDEContainer .editor-preview,
+.EasyMDEContainer .editor-preview-side {
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: hidden !important;
+    box-sizing: border-box !important;
+}
+
+.p-content p {
+    margin-bottom: 0;
+}
+
+.carousel-fixed-height {
+    height: 350px;
+}
+
+.carousel-fixed-height .carousel-item {
+    height: 350px;
+}
+
+.carousel-img {
+    height: 100%;
+    object-fit: cover;
+}
+
+header nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 1rem;
+}
+
+header nav ul li a {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    transition: color 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+header nav ul li a:hover {
+    color: var(--app-vivid-blue);
+    background-color: rgba(43, 127, 255, 0.1);
 }

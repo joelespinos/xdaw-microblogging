@@ -15,10 +15,17 @@
     <link rel="preload" href="<?= base_url("assets/fontawesome/webfonts/fa-regular-400.woff2") ?>" as="font" type="font/woff2" crossorigin>
     <link rel="stylesheet" href="<?= base_url("assets/fontawesome/css/all.min.css") ?>">
 </head>
-<body class="text-white">
+<body class="text-white" style="height: 100%;">
 
     <header class="d-flex justify-content-between align-items-center bottom-border-gray py-2">
         <img src="<?= base_url("assets/images/xdaw-logo.png") ?>" alt="XDAW Logo" class="ms-1" width="120px">
+
+        <nav>
+            <ul>
+                <li><a href="<?= base_url("dashboard") ?>">Inici</a></li>
+            </ul>
+        </nav>
+
         <div class="dropdown">
             <a class="mb-0 me-3 text-reset text-decoration-none" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                 @<?= esc(session()->user_username) ?>
@@ -34,8 +41,10 @@
 
     <?= $this->renderSection('dashboard-content') ?>
 
-    <footer>
-        este es el footer del dashboard
+    <footer class="bg-dark-gray border-gray mt-4 py-3">
+        <div class="ms-3">
+            &copy; <?= date('Y') ?> XDaw. Creat per Joel Espinós amb molt d'amor per CodeIgniter.
+        </div>
     </footer>
     
     <!-- SWEET ALERTS JS -->

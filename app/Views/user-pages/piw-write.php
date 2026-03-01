@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/dashboard-layout.php') ?>
 <?= $this->section('dashboard-content') ?>
 
-<main class="d-flex justify-content-center mt-5 mb-5">
+<main class="d-flex justify-content-center mt-5 mb-5" style="flex: 1 0 auto;">
     <div class="bg-dark-gray text-white p-5 rounded-lg shadow" style="max-width: 700px; width: 100%;">
 
         <h2 class="text-vivid-blue text-center mb-4">Escriu la teva piwlada!</h2>

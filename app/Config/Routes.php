@@ -44,6 +44,10 @@ $routes->group('dashboard', ['filter' => 'authforms'], static function($routes) 
 
         $routes->post('visibility/(:uuid7)', 'UserPagesController::visibilityPiwlada/$1', ['filter' => 'piwladaAuth']);
         $routes->addRedirect('visibility/', 'dashboard');
+
+        $routes->get('comments/(:uuid7)', 'UserPagesController::commentsPiwladaGet/$1', ['filter' => 'commentsAcces']);
+        $routes->post('comments/(:uuid7)', 'UserPagesController::commentsPiwladaPost/$1', ['filter' => 'commentsAcces']);
+        $routes->addRedirect('comments/', 'dashboard');
     });
 
 });

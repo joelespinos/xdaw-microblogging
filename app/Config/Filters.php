@@ -15,6 +15,7 @@ use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\AuthFilter;
 use App\Filters\LoggedInFilter;
 use App\Filters\PiwladaAuthorizationFilter;
+use App\Filters\PiwladaCommentsAccessFilter;
 
 class Filters extends BaseFilters
 {
@@ -46,6 +47,9 @@ class Filters extends BaseFilters
 
         // Filtre per autenticar que l'usuari que vol manipular una piwlada sigui el creador o un admin
         'piwladaAuth'   => PiwladaAuthorizationFilter::class,
+
+        // Filtre per confirmar que la piwlada a la que se vol accedir a la seva seccio de comenaris sigui publica
+        'commentsAcces' => PiwladaCommentsAccessFilter::class
     ];
 
     /**

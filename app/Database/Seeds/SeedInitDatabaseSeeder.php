@@ -41,13 +41,15 @@ class SeedInitDatabaseSeeder extends Seeder
                 $piwlada = new PiwladaPostEntity([
                     'piwlada_uuid' => Uuid::uuid7(),
                     'user_uuid'    => $user->user_uuid,
+                    'parent_uuid'  => null,
                     'content'      => $faker->sentence(12),
-                    'private_date' => null
+                    'visibility'   => 'public'
                 ]);
 
                 $piwladaModel->save($piwlada);
 
                 for ($j = 0; $j < 2; $j++) {
+
                     $randomNumber = random_int(1, 4);
                     $fileName = "default-{$randomNumber}.jpg";
                     
@@ -57,9 +59,22 @@ class SeedInitDatabaseSeeder extends Seeder
                         'file_path'             => "seeder-images/{$fileName}",
                         'file_original_name'    => $fileName,
                         'mime_type'             => 'image/jpeg'
-                        ]);
+                    ]);
                         
                     $mediaModel->save($media);
+                }
+
+                for ($k = 0; $k < 15; $k++) {
+
+                    $comment = new PiwladaPostEntity([
+                        'piwlada_uuid' => Uuid::uuid7(),
+                        'user_uuid'    => $user->user_uuid,
+                        'parent_uuid'  => $piwlada->piwlada_uuid,
+                        'content'      => $faker->sentence(8),
+                        'visibility'   => 'public'
+                    ]);
+
+                    $piwladaModel->save($comment);
                 }
             }
         }
