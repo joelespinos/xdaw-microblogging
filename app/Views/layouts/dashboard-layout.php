@@ -18,11 +18,13 @@
 <body class="text-white" style="height: 100%;">
 
     <header class="d-flex justify-content-between align-items-center bottom-border-gray py-2">
-        <img src="<?= base_url("assets/images/xdaw-logo.png") ?>" alt="XDAW Logo" class="ms-1" width="120px">
+        <a href="<?= base_url("dashboard") ?>">
+            <img src="<?= base_url("assets/images/xdaw-logo.png") ?>" alt="XDAW Logo" class="ms-1" width="120px">
+        </a>
 
         <nav>
             <ul>
-                <li><a href="<?= base_url("dashboard") ?>">Inici</a></li>
+                <li><a href="<?= base_url("dashboard") ?>">Dashboard</a></li>
             </ul>
         </nav>
 

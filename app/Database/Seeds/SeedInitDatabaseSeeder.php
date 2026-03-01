@@ -42,12 +42,13 @@ class SeedInitDatabaseSeeder extends Seeder
                     'piwlada_uuid' => Uuid::uuid7(),
                     'user_uuid'    => $user->user_uuid,
                     'parent_uuid'  => null,
-                    'content'      => $faker->sentence(12),
+                    'content'      => $faker->realText(120),
                     'visibility'   => 'public'
                 ]);
 
                 $piwladaModel->save($piwlada);
 
+                // Media
                 for ($j = 0; $j < 2; $j++) {
 
                     $randomNumber = random_int(1, 4);
@@ -64,13 +65,14 @@ class SeedInitDatabaseSeeder extends Seeder
                     $mediaModel->save($media);
                 }
 
+                // Comments
                 for ($k = 0; $k < 15; $k++) {
 
                     $comment = new PiwladaPostEntity([
                         'piwlada_uuid' => Uuid::uuid7(),
                         'user_uuid'    => $user->user_uuid,
                         'parent_uuid'  => $piwlada->piwlada_uuid,
-                        'content'      => $faker->sentence(8),
+                        'content'      => $faker->realText(80),
                         'visibility'   => 'public'
                     ]);
 

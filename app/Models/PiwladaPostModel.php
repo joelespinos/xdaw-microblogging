@@ -91,6 +91,7 @@ class PiwladaPostModel extends Model
     {
         return $this->select('piwlada_post.*, user_profile.username')
                     ->join('user_profile', 'piwlada_post.user_uuid = user_profile.user_uuid')
-                    ->where('piwlada_post.parent_uuid', $piwladaUuid);
+                    ->where('piwlada_post.parent_uuid', $piwladaUuid)
+                    ->orderBy('piwlada_post.created_at', 'DESC');
     }
 }

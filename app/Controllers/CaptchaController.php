@@ -8,17 +8,17 @@ class CaptchaController extends BaseController
 {
     public function refresh()
     {
-        // Aquest controlador només respon a l'AJAX
         $captchaLib = new \App\Libraries\Text2Image([
-            'length'     => 5,
             'textColor'  => '#747474',
             'backColor'  => '#395786',
             'noiceLines' => 10,
             'noiceDots'  => 20,
-            'imgWidth'  => 200,
-            'imgHeight' => 50
+            'imgWidth'   => 200,
+            'imgHeight'  => 50
         ]);
-        $captchaLib->captcha();
+
+        $captchaLib->mathCaptcha();
+
         session()->set('captcha_text', $captchaLib->text);
 
         return $this->response->setJSON([

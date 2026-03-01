@@ -40,7 +40,7 @@
                                 </div>
                             <?php endif; ?>
 
-                            <div class="p-3 top-border-gray text-white mt-auto">
+                            <div class="p-3 top-border-gray text-white p-content mb-auto">
                                 <?= $piwlada->content ?>
                             </div>
                         </div>
@@ -64,12 +64,22 @@
                                                     @<?= esc($comment->username) ?>
                                                 </strong>
 
-                                                <small class="text-white">
-                                                    <?= date('d/m/Y H:i', strtotime($comment->created_at)) ?>
-                                                </small>
+                                                <?php if ($comment->canManipulate): ?>
+                                                    <div class="ms-2 d-flex gap-2">
+                                                        <a href="<?= base_url('/dashboard/piw/edit/'.$comment->piwlada_uuid) ?>" class="text-decoration-none">
+                                                            <i class="fa-solid fa-pen-to-square"></i>
+                                                        </a>
+                                                        <a href="" type="button" class="btn btn-link me-1 p-0 text-decoration-none" onclick="confirmationDelete('<?= $comment->piwlada_uuid ?>', event)" role="button">
+                                                            <i class="fa-solid fa-trash text-danger"></i>
+                                                        </a>
+                                                        <form id="delete-form-<?= $comment->piwlada_uuid ?>" method="post" action="<?= base_url('/dashboard/piw/delete/'.$comment->piwlada_uuid) ?>" class="d-none" role="button">
+                                                            <?= csrf_field() ?>
+                                                        </form>
+                                                    </div>
+                                                <?php endif; ?>
                                             </div>
 
-                                            <div class="text-white">
+                                            <div class="text-white p-content">
                                                 <?= esc($comment->content) ?>
                                             </div>
                                         </div>
@@ -120,6 +130,30 @@
 <script src="https://unpkg.com/easymde/dist/easymde.min.js"></script>
 
 <script>
+    function confirmationDelete(uuid, event) {
+        event.preventDefault();
+        Swal.fire({
+            title: '<i class="fa-solid fa-trash me-2 text-vivid-blue"></i>Confirma l\'esborrat',
+            html: "<p>Estàs a punt d'esborrar aquest comentari. Aquesta acció és irreversible.</p>",
+            showCancelButton: true,
+            showConfirmButton: true,
+            confirmButtonText: 'Esborrar',
+            cancelButtonText: 'Cancel·lar',
+            customClass: {
+                popup: 'bg-dark-gray text-white p-4 rounded-lg',
+                confirmButton: 'btn-vivid px-4 py-2 rounded ms-5',
+                cancelButton: 'btn text-vivid-blue px-4 py-2 rounded border border-vivid-blue'
+            },
+            buttonsStyling: false,
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('delete-form-' + uuid);
+                if (form) form.submit();
+            }
+        });
+    }
+
 document.addEventListener('DOMContentLoaded', () => {
 
     var easyMDE = new EasyMDE({
@@ -129,8 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
         autoDownloadFontAwesome: false,
         minHeight: "30px"
     });
-
-    easyMDE.codemirror.focus();
 
 });
 </script>

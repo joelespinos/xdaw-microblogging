@@ -130,7 +130,6 @@
             reverseButtons: true,
         }).then((result) => {
             if (result.isConfirmed) {
-                // Submet el formulari existent amb CSRF
                 const form = document.getElementById('delete-form-' + uuid);
                 if (form) form.submit();
             }

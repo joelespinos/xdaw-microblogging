@@ -17,30 +17,32 @@
                 <textarea name="piwladaContent" id="piwladaContent" class="form-control"><?= esc($piwladaContent) ?></textarea>
             </div>
 
-            <!-- DROP ZONE IMATGES -->
-            <div class="mb-3">
-                <label class="form-label">
-                    <i class="fa-solid fa-image text-vivid-blue"></i> Penja les teves imatges
-                </label>
+            <?php if($piwlada->parent_uuid == null): ?>
+                <!-- DROP ZONE IMATGES -->
+                <div class="mb-3">
+                    <label class="form-label">
+                        <i class="fa-solid fa-image text-vivid-blue"></i> Penja les teves imatges
+                    </label>
 
-                <div id="dropZone" class="drop-zone text-center rounded p-4">
-                    Arrossega imatges aquí o fes clic
+                    <div id="dropZone" class="drop-zone text-center rounded p-4">
+                        Arrossega imatges aquí o fes clic
+                    </div>
+
+                    <ul id="oldFileList" class="mt-3 list-unstyled mb-0">
+                        <?php if (!empty($piwladaMedias)): ?>
+                            <?php foreach ($piwladaMedias as $media): ?>
+                                <li>
+                                    <span><?= esc($media->file_original_name) ?></span>
+                                    
+                                    <input type="hidden" name="oldPiwladaMedias[]" value="<?= esc($media->media_uuid) ?>">
+                                    <button type="button" class="btn-remove"><i class="fa-solid fa-x"></i></button>
+                                </li>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    </ul>
+                    <ul id="fileList" class="mt-0 list-unstyled"></ul>
                 </div>
-
-                <ul id="oldFileList" class="mt-3 list-unstyled mb-0">
-                    <?php if (!empty($piwladaMedias)): ?>
-                        <?php foreach ($piwladaMedias as $media): ?>
-                            <li>
-                                <span><?= esc($media->file_original_name) ?></span>
-                                
-                                <input type="hidden" name="oldPiwladaMedias[]" value="<?= esc($media->media_uuid) ?>">
-                                <button type="button" class="btn-remove"><i class="fa-solid fa-x"></i></button>
-                            </li>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </ul>
-                <ul id="fileList" class="mt-0 list-unstyled"></ul>
-            </div>
+            <?php endif; ?>
 
             <button type="submit" class="btn-vivid rounded py-2 btn-lg">Editar</button>
 

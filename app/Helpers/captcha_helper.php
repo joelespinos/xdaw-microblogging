@@ -12,7 +12,6 @@ if (!function_exists('render_captcha')) {
     {
         // 1. Configuració per defecte (es pot sobreescriure per paràmetres)
         $defaultConfig = [
-            'length'     => 5,
             'textColor'  => '#747474',
             'backColor'  => '#395786',
             'noiceLines' => 10,
@@ -24,7 +23,7 @@ if (!function_exists('render_captcha')) {
 
         // 2. Generem el Captcha i el guardem a la sessió
         $captchaLib = new \App\Libraries\Text2Image($finalConfig);
-        $captchaLib->captcha();
+        $captchaLib->mathCaptcha();
         session()->set('captcha_text', $captchaLib->text);
 
         // 3. Obtenim la imatge i la ruta per l'AJAX

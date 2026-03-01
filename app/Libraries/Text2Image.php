@@ -141,6 +141,35 @@ class Text2Image
         return $this;
     }
 
+    public function mathCaptcha(): self
+    {
+        $num1 = random_int(1, 9);
+        $num2 = random_int(1, 9);
+
+        $operations = ['+', '-'];
+        $operator = $operations[array_rand($operations)];
+
+        switch ($operator) {
+            case '+':
+                $result = $num1 + $num2;
+                break;
+            case '-':
+                if ($num2 > $num1) {
+                    [$num1, $num2] = [$num2, $num1];
+                }
+                $result = $num1 - $num2;
+                break;
+        }
+
+        $this->text = $num1 . ' ' . $operator . ' ' . $num2;
+
+        $this->captcha();
+
+        $this->text = (string) $result;
+
+        return $this;
+    }
+
     // --- Mètodes interns de suport ---
 
     private function saveToBlob(\GdImage $im): void

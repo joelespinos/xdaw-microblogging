@@ -104,7 +104,9 @@ class UserPagesController extends BaseController
                     
                     $piwladaMediaModel->save($piwladaMediaToAdd);
 
-                    $file->move(WRITEPATH . 'uploads/users-images', $newName);
+                    $destinationFolder = WRITEPATH . 'uploads/users-images';
+                    if (!is_dir($destinationFolder)) mkdir($destinationFolder, 0755, true);
+                    $file->move($destinationFolder, $newName);
                 }
             }
         }
@@ -130,6 +132,7 @@ class UserPagesController extends BaseController
         if (!empty($mediasOfPiwlada)) $data['piwladaMedias'] = $mediasOfPiwlada;
 
         $data['piwladaContent'] = $piwladaSearch->content;
+        $data['piwlada'] = $piwladaSearch;
         $data['title'] = "Edita la teva piwlada";
 
         return view('user-pages/piw-edit', $data);
@@ -171,39 +174,46 @@ class UserPagesController extends BaseController
             $piwladaModel->save($piwladaSearch);
         }
 
-        $oldMedias = $this->request->getPost('oldPiwladaMedias') ?? [];
-        $allMedias = $piwladaMediaModel->where('piwlada_uuid', $piwladaIdBytes)->findAll();
+        // Si la piwlada no es un comentari, procesem les posibles imatges que tingui
+        if ($piwladaSearch->parent_uuid == null) {
 
-        foreach ($allMedias as $media) {
-            if (!in_array($media->media_uuid, $oldMedias)) {
-                $mediaUuidBytes = Uuid::fromString($media->media_uuid)->getBytes();
-                $piwladaMediaModel->where('media_uuid', $mediaUuidBytes)->delete();
+            $oldMedias = $this->request->getPost('oldPiwladaMedias') ?? [];
+            $allMedias = $piwladaMediaModel->where('piwlada_uuid', $piwladaIdBytes)->findAll();
+
+            foreach ($allMedias as $media) {
+                if (!in_array($media->media_uuid, $oldMedias)) {
+                    $mediaUuidBytes = Uuid::fromString($media->media_uuid)->getBytes();
+                    $piwladaMediaModel->where('media_uuid', $mediaUuidBytes)->delete();
+                }
             }
-        }
 
-        // Noves imatges
-        $piwladaMedias = $this->request->getFileMultiple('piwladaMedias');
+            // Noves imatges
+            $piwladaMedias = $this->request->getFileMultiple('piwladaMedias');
 
-        if ($piwladaMedias != null) {
-            foreach ($piwladaMedias as $file) {
+            if ($piwladaMedias != null) {
+                foreach ($piwladaMedias as $file) {
 
-                if ($file->isValid() && !$file->hasMoved()) {
-                    $newName = $file->getRandomName();
-                    
-                    $piwladaMediaToAdd = new PiwladaMediaEntity();
-                    $piwladaMediaToAdd->piwlada_uuid = $piwladaSearch->piwlada_uuid;
-                    $piwladaMediaToAdd->file_path = 'users-images/' . $newName;
-                    $piwladaMediaToAdd->file_original_name = $file->getName();
-                    $piwladaMediaToAdd->mime_type = $file->getMimeType();
-                    
-                    $piwladaMediaModel->save($piwladaMediaToAdd);
+                    if ($file->isValid() && !$file->hasMoved()) {
+                        $newName = $file->getRandomName();
+                        
+                        $piwladaMediaToAdd = new PiwladaMediaEntity();
+                        $piwladaMediaToAdd->piwlada_uuid = $piwladaSearch->piwlada_uuid;
+                        $piwladaMediaToAdd->file_path = 'users-images/' . $newName;
+                        $piwladaMediaToAdd->file_original_name = $file->getName();
+                        $piwladaMediaToAdd->mime_type = $file->getMimeType();
+                        
+                        $piwladaMediaModel->save($piwladaMediaToAdd);
 
-                    $file->move(WRITEPATH . 'uploads/users-images', $newName);
+                        $destinationFolder = WRITEPATH . 'uploads/users-images';
+                        if (!is_dir($destinationFolder)) mkdir($destinationFolder, 0755, true);
+                        $file->move($destinationFolder, $newName);
+                    }
                 }
             }
         }
 
-        return redirect()->to(base_url('/dashboard'));
+        if ($piwladaSearch->parent_uuid == null) return redirect()->to(base_url('/dashboard'))->with('info-advice', 'La piwlada amb uuid: ' . $piwladaUuid . ' s\'ha editat correctament.');
+        else return redirect()->to(base_url('/dashboard/piw/comments/' . $piwladaSearch->parent_uuid))->with('info-advice', 'El commentari amb uuid: ' . $piwladaUuid . ' s\'ha editat correctament.');
         
     }
 
@@ -228,7 +238,8 @@ class UserPagesController extends BaseController
         // Cascade soft delete per a comentaris
         $piwladaPostModel->where('parent_uuid', $piwladaUuidBytes)->delete();
 
-        return redirect()->to(base_url('/dashboard'))->with('info-advice', 'La piwlada amb uuid: ' . $piwladaUuid . ' s\'ha esborrat correctament.');
+        if ($piwladaSearch->parent_uuid == null) return redirect()->to(base_url('/dashboard'))->with('info-advice', 'La piwlada amb uuid: ' . $piwladaUuid . ' s\'ha esborrat correctament.');
+        else return redirect()->to(base_url('/dashboard/piw/comments/' . $piwladaSearch->parent_uuid))->with('info-advice', 'El comentari amb uuid: ' . $piwladaUuid . ' s\'ha esborrat correctament.');
     }
 
     public function visibilityPiwlada($piwladaUuid)
@@ -240,15 +251,24 @@ class UserPagesController extends BaseController
 
         switch ($piwladaSearch->visibility) {
             case 'public':
-                $piwladaPostModel->set('visibility', 'private')->where('piwlada_uuid', $piwladaUuidBytes)->update();
+                $newVisibility = 'private';
                 break;
 
             case 'private':
-                $piwladaPostModel->set('visibility', 'public')->where('piwlada_uuid', $piwladaUuidBytes)->update();
+                $newVisibility = 'public';
                 break;
         }
-        
-        return redirect()->to(base_url('/dashboard'))->with('info-advice', 'S\'ha canviat la visibilitat de la piwlada amb uuid: ' . $piwladaUuid . ' correctament.');
+
+        $piwladaPostModel
+            ->groupStart()
+                ->where('piwlada_uuid', $piwladaUuidBytes)
+                ->orWhere('parent_uuid', $piwladaUuidBytes)
+            ->groupEnd()
+            ->set('visibility', $newVisibility)
+            ->update();
+
+        return redirect()->to(base_url('/dashboard'))
+            ->with('info-advice', 'S\'ha canviat la visibilitat de la piwlada amb uuid: ' . $piwladaUuid . ' correctament.');
     }
 
     public function commentsPiwladaGet($piwladaUuid)
@@ -273,8 +293,9 @@ class UserPagesController extends BaseController
         $piwladaSearch->content = $converter->convert($piwladaSearch->content);
         $piwladaSearch->comments = $piwladaPostModel->getCommentsByParentId($piwladaUuidBytes)->paginate(3);
 
-        foreach($piwladaSearch->comments as $commentContent) {
-            $commentContent->content = $converter->convert($commentContent->content);
+        foreach($piwladaSearch->comments as $comment) {
+            $comment->content = $converter->convert($comment->content);
+            $comment->canManipulate = (!$this->checkTimeRestriction($comment) && $comment->user_uuid == session()->get('user_uuid')) || session()->get('user_role') == 'admin';
         }
 
         $data['piwlada'] = $piwladaSearch;
