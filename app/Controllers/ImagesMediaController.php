@@ -33,12 +33,12 @@ class ImagesMediaController extends BaseController
         $userRole   = session()->get('user_role') ?? '';
         $userUuid   = session()->get('user_uuid') ?? '';
 
-        if ($piwlada->visibility === 'public') {
+        if ($piwlada->visibility == 'public') {
             if (!$isLoggedIn) {
                 throw PageNotFoundException::forPageNotFound();
             }
-        } elseif ($piwlada->visibility === 'private') {
-            if (!$isLoggedIn || ($userUuid !== $piwlada->user_uuid && $userRole !== 'admin')) {
+        } elseif ($piwlada->visibility == 'private') {
+            if (!$isLoggedIn || ($userUuid != $piwlada->user_uuid && $userRole != 'admin')) {
                 throw PageNotFoundException::forPageNotFound();
             }
         }

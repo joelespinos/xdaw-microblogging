@@ -130,6 +130,7 @@ class AuthFormsController extends BaseController
 
         if (! session()->has('captcha_text') || strtolower($captchaInput) !== strtolower(session()->get('captcha_text'))) {
 
+            // $hasListErrors serveix per afegir el error de captcha als possibles errors que ja hi hagin en el validator
             if ($hasListErrors) $this->validator->setError('captcha_input', 'El codi de la imatge és incorrecte.');
             
             return false;
