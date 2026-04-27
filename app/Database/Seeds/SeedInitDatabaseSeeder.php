@@ -27,10 +27,11 @@ class SeedInitDatabaseSeeder extends Seeder
         foreach ($roles as $role) {
 
             $user = new UserProfileEntity([
-                'user_uuid' => Uuid::uuid7(),
-                'username'  => $faker->userName(),
-                'email'     => $faker->unique()->safeEmail(),
-                'role'      => $role
+                'user_uuid'         => Uuid::uuid7(),
+                'username'          => $faker->userName(),
+                'descriptive_name'  => strtolower($faker->userName()),
+                'email'             => $faker->unique()->safeEmail(),
+                'role'              => $role
             ]);
 
             $user->setPassword('1234');

@@ -1,0 +1,235 @@
+openapi: 3.0.0
+info:
+  title: API XDAW Pro
+  description: |
+    Documentació oficial de l'API XDAW Pro.
+    **Nota:** Les rutes privades requereixen el token JWT a la capçalera `Authorization`.
+    Els paràmetres d'entrada estan configurats com a **form-data** (multipart/form-data).
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:80/api/v1
+    description: Servidor local de desenvolupament (php spark serve)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+paths:
+  # ==========================================
+  # AUTH
+  # ==========================================
+  /login:
+    post:
+      tags: [Auth]
+      summary: Login d'usuari
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email, example: "usuari@test.com" }
+                password: { type: string, format: password, example: "Password123!" }
+      responses:
+        200: { description: "Sessió iniciada, retorna token JWT" }
+
+  /logout:
+    post:
+      tags: [Auth]
+      summary: Tancar sessió
+      security: [{ BearerAuth: [] }]
+      responses:
+        200: { description: "Token invalidat correctament" }
+
+  # ==========================================
+  # PIWLADES - PÚBLIQUES
+  # ==========================================
+  /piwlada/{uuid}:
+    get:
+      tags: [Piwlades - Públiques]
+      summary: Obtenir una piwlada per UUID
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        200: { description: "Retorna l'objecte piwlada" }
+    delete:
+      tags: [Piwlades - Privades]
+      summary: Esborrar piwlada i comentaris fills
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        200: { description: "Piwlada esborrada" }
+
+  /piwlada/{uuid}/comments:
+    get:
+      tags: [Piwlades - Públiques]
+      summary: Obtenir llista de comentaris d'una piwlada
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        200: { description: "Llista de comentaris recuperada" }
+
+  /piwlada/{uuid}/author:
+    get:
+      tags: [Piwlades - Públiques]
+      summary: Obtenir info bàsica de l'autor i dates
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        200: { description: "Retorna username, createdAt i updatedAt" }
+
+  /piwlada/{uuid}/full:
+    get:
+      tags: [Piwlades - Públiques]
+      summary: Obtenir piwlada amb tots els seus comentaris
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        200: { description: "Objecte complet" }
+
+  # ==========================================
+  # PIWLADES - PRIVADES
+  # ==========================================
+  /piwlada:
+    post:
+      tags: [Piwlades - Privades]
+      summary: Crear una nova piwlada (amb imatges)
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string, description: "Text de la piwlada" }
+                images[]: { type: array, items: { type: string }, description: "Imatges en format Base64" }
+                images_names[]: { type: array, items: { type: string }, description: "Noms dels fitxers" }
+      responses:
+        201: { description: "Piwlada creada correctament" }
+
+  /piwlada/{uuid}/comment:
+    post:
+      tags: [Piwlades - Privades]
+      summary: Afegir un comentari a una piwlada
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content: { type: string }
+      responses:
+        201: { description: "Comentari afegit" }
+
+  /piwlada/{uuid}/edit:
+    post:
+      tags: [Piwlades - Privades]
+      summary: Editar contingut i gestionar imatges
+      description: Té un filtre de temps (30 minuts) per a usuaris estàndard.
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                content: { type: string }
+                old_medias[]: { type: array, items: { type: string }, description: "UUIDs de fotos a mantenir" }
+                images[]: { type: array, items: { type: string }, description: "Noves fotos en Base64" }
+                images_names[]: { type: array, items: { type: string } }
+      responses:
+        200: { description: "Piwlada actualitzada" }
+
+  /piwlada/{uuid}/status:
+    post:
+      tags: [Piwlades - Privades]
+      summary: Canviar visibilitat de la piwlada
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [public, private, draft] }
+      responses:
+        200: { description: "Estat canviat" }
+
+  # ==========================================
+  # USUARIS
+  # ==========================================
+  /user/{uuid}:
+    get:
+      tags: [Usuaris]
+      summary: Obtenir dades públiques d'un perfil
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        200: { description: "Dades de l'usuari" }
+
+  /user/{uuid}/update:
+    post:
+      tags: [Usuaris]
+      summary: Actualitzar dades del compte
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: uuid
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [username, email, password]
+              properties:
+                username: { type: string }
+                email: { type: string }
+                password: { type: string }
+                role: { type: string, enum: [standard, admin], description: "Només editable si ets Admin" }
+      responses:
+        200: { description: "Perfil actualitzat correctament" }

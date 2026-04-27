@@ -14,7 +14,7 @@ class UserProfileModel extends Model
     protected $returnType       = UserProfileEntity::class;
     protected $useSoftDeletes   = true;
     protected $protectFields    = true;
-    protected $allowedFields    = ['username', 'email', 'password_hash', 'role'];
+    protected $allowedFields    = ['username', 'descriptive_name', 'email', 'password_hash', 'role'];
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ca">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Documentació API XDaw</title>
+    <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5/swagger-ui.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+</head>
+
+<body>
+    <div id="swagger-ui"></div>
+
+    <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
+    <script>
+        window.onload = function () {
+            const ui = SwaggerUIBundle({
+                url: "/docs/swagger.yaml",
+                dom_id: '#swagger-ui',
+                deepLinking: true,
+
+                presets: [
+                    SwaggerUIBundle.presets.apis,
+                ],
+
+                layout: "BaseLayout",
+
+                // ─── Interceptor de peticions ────────────────────────────────────────
+                // Afegeix el token guardat a cada petició sortint
+                requestInterceptor: (req) => {
+                    const storedToken = localStorage.getItem('api_session_token');
+                    if (storedToken) {
+                        req.headers.Authorization = "Bearer " + storedToken;
+                    }
+                    return req;
+                },
+
+                // ─── Interceptor de respostes ────────────────────────────────────────
+                // Detecta si la resposta conté un token nou i l'actualitza automàticament
+                responseInterceptor: (res) => {
+                    let data = res.body;
+
+                    // Si el body arriba com a string, intentem parsejar-lo com a JSON
+                    if (typeof data === 'string' && data.trim().startsWith('{')) {
+                        try {
+                            data = JSON.parse(data);
+                        } catch (e) {
+                            console.error("Error parsejant JSON de la resposta", e);
+                        }
+                    }
+
+                    // Acceptem el token tant del login (token) com dels refreshos (refreshToken)
+                    const nouToken = data?.token || data?.refreshToken;
+
+                    if (nouToken) {
+                        // 1. Guardem el nou token al localStorage
+                        localStorage.setItem('api_session_token', nouToken);
+
+                        const via = data.token ? "token" : "refreshToken";
+                        console.log(`✅ Token actualitzat (via ${via})`);
+
+                        // 2. Forcem Swagger UI a utilitzar el nou token immediatament
+                        ui.authActions.authorize({
+                            bearerAuth: {
+                                name: "bearerAuth",
+                                schema: { type: "http", scheme: "bearer", bearerFormat: "JWT" },
+                                value: nouToken
+                            }
+                        });
+                    }
+
+                    return res;
+                }
+            });
+
+            window.ui = ui;
+        };
+    </script>
+</body>
+
+</html>

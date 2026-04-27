@@ -49,5 +49,38 @@ $routes->group('dashboard', ['filter' => 'authforms'], static function($routes) 
         $routes->post('comments/(:uuid7)', 'UserPagesController::commentsPiwladaPost/$1', ['filter' => 'commentsAcces']);
         $routes->addRedirect('comments/', 'dashboard');
     });
+});
 
+// Api-Rest Routes
+$routes->group('api/v1', ['namespace' => 'App\Controllers\Api'], function ($routes) {
+
+    // Obtenir imatges de les piwlades
+    $routes->get('media/(:uuid7)', 'MediaController::getMedia/$1');
+
+    // Auth
+    $routes->post('login',  'AuthController::login');
+    $routes->post('logout', 'AuthController::logout', ['filter' => 'jwt:noRenew']);
+
+    // Piwlades — públiques
+    $routes->get('piwlada/(:uuid7)/comments', 'PiwladasController::getComments/$1',     ['filter' => 'publicPiwlada']);
+    $routes->get('piwlada/(:uuid7)/author',   'PiwladasController::getBasicInfo/$1',    ['filter' => 'publicPiwlada']);
+    $routes->get('piwlada/(:uuid7)/full',     'PiwladasController::getFullPiwlada/$1',  ['filter' => 'publicPiwlada']);
+    $routes->get('piwlada/(:uuid7)',          'PiwladasController::getPiwlada/$1',      ['filter' => 'publicPiwlada']);
+
+    // Usuaris — públics
+    $routes->get('user/(:uuid7)', 'UserProfilesController::getUser/$1');
+
+    // Piwlades — privades
+    $routes->post('piwlada',                   'PiwladasController::createPiwlada',          ['filter' => 'jwt']);
+    $routes->post('piwlada/(:uuid7)/comment',  'PiwladasController::commentOnPiwlada/$1',    ['filter' => ['jwt', 'publicPiwlada:withToken']]);
+    $routes->post('piwlada/(:uuid7)/edit',     'PiwladasController::updatePiwlada/$1',       ['filter' => ['jwt', 'apiPiwladaAuth:timeExpiration']]);
+    $routes->post('piwlada/(:uuid7)/status',   'PiwladasController::updatePiwladaStatus/$1', ['filter' => ['jwt', 'apiPiwladaAuth']]);
+    $routes->delete('piwlada/(:uuid7)',        'PiwladasController::deletePiwlada/$1',       ['filter' => ['jwt', 'apiPiwladaAuth']]);
+
+    // Usuaris — privats
+    $routes->post('user/(:uuid7)/update', 'UserProfilesController::updateUser/$1', ['filter' => ['jwt', 'apiUserAuth']]);
+
+    // Debug routes
+    $routes->get('piwlada/all', 'PiwladasController::getAllPiwladas');
+    $routes->get('user/all',    'UserProfilesController::getAllUsers',);
 });

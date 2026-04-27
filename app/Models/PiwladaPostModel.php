@@ -81,7 +81,7 @@ class PiwladaPostModel extends Model
 
     public function getPiwladaWithUsername($piwladaUuid)
     {
-        return $this->select('piwlada_post.*, user_profile.username')
+        return $this->select('piwlada_post.*, user_profile.username, user_profile.descriptive_name')
                     ->join('user_profile', 'piwlada_post.user_uuid = user_profile.user_uuid')
                     ->where('piwlada_post.piwlada_uuid', $piwladaUuid)
                     ->first();

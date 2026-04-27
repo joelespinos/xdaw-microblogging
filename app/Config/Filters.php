@@ -17,6 +17,11 @@ use App\Filters\LoggedInFilter;
 use App\Filters\PiwladaAuthorizationFilter;
 use App\Filters\PiwladaCommentsAccessFilter;
 
+use App\Filters\Api\JWTFilter;
+use App\Filters\Api\PiwladaAuthorizationFilter as ApiPiwladaAuthorizationFilter;
+use App\Filters\Api\PublicPiwladaFilter;
+use App\Filters\Api\UserAuthorizationFilter;
+
 class Filters extends BaseFilters
 {
     /**
@@ -49,7 +54,19 @@ class Filters extends BaseFilters
         'piwladaAuth'   => PiwladaAuthorizationFilter::class,
 
         // Filtre per confirmar que la piwlada a la que se vol accedir a la seva seccio de comenaris sigui publica
-        'commentsAcces' => PiwladaCommentsAccessFilter::class
+        'commentsAcces' => PiwladaCommentsAccessFilter::class,
+
+        // API-Rest Filters
+
+        // Filtres API
+        'jwt'            => JWTFilter::class,
+
+        'apiPiwladaAuth' => ApiPiwladaAuthorizationFilter::class,
+
+        'publicPiwlada'  => PublicPiwladaFilter::class,
+
+        'apiUserAuth'    => UserAuthorizationFilter::class,
+
     ];
 
     /**
@@ -89,7 +106,7 @@ class Filters extends BaseFilters
     public array $globals = [
         'before' => [
             // 'honeypot',
-            // 'csrf',
+            'csrf' => ['except' => ['api/*', 'fileconnector']],
             // 'invalidchars',
         ],
         'after' => [
@@ -113,7 +130,7 @@ class Filters extends BaseFilters
      */
     public array $methods = [
         // Activem CSRF (Cross-Site Request Forgery)
-        'post' => ['csrf'],
+        // 'post' => ['csrf'],
     ];
 
     /**
